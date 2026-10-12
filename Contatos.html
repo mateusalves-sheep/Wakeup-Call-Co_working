@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Contatos</h1>
+
+  {% with mensagens = get_flashed_messages(with_categories=true) %}
+    {% for categoria, msg in mensagens %}
+      <div class=" ">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST" action="{{ url_for('contatos.listar_e_criar') }}" novalidate>
+    <div class="<!-- classe real -->">
+      <label for="nome">Nome *</label>
+      <input type="text" id="nome" name="nome"
+             value="{{ valores.nome or '' }}"
+             class="<!-- classe real -->">
+      {% if erros.nome %}
+        <span class="<!-- classe real -->">{{ erros.nome }}</span>
+      {% endif %}
+    </div>
+  </form>
+
+{% endblock %}
