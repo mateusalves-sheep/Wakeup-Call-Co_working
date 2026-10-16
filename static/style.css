@@ -1,0 +1,315 @@
+/* ==========================================================
+   WakeUpCall — static/css/style.css
+   Ordem do arquivo: 1 tokens · 2 base · 3 layout · 4 navegação
+   · 5 botões · 6 formulários · 7 etiquetas · 8 cartão de tarefa
+   · 9 painel · 10 telas maiores
+   Regra do grupo: cores e espaços SEMPRE via variáveis (:root).
+   ========================================================== */
+
+/* 1. TOKENS ------------------------------------------------ */
+:root {
+  /* marca */
+  --noite: #16233f;
+  --noite-2: #24365c;
+  --alvorada: #f5a524;
+  --alvorada-escuro: #d98a0b;
+
+  /* neutros */
+  --fundo: #f2f4f8;
+  --superficie: #ffffff;
+  --borda: #dde2ec;
+  --texto: #1a2335;
+  --texto-suave: #5a6579;
+
+  /* status (texto + fundo claro) */
+  --st-afazer: #4a5670;     --st-afazer-bg: #e8ebf2;
+  --st-fazendo: #1d5fd0;    --st-fazendo-bg: #e2ecfc;
+  --st-concluida: #1b7a4b;  --st-concluida-bg: #ddf3e7;
+  --st-atrasada: #b42318;   --st-atrasada-bg: #fce4e1;
+
+  /* tipografia */
+  --fonte-titulo: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --fonte-texto: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* espaçamento (escala de 0,25rem) */
+  --e1: 0.25rem; --e2: 0.5rem; --e3: 0.75rem; --e4: 1rem;
+  --e5: 1.5rem;  --e6: 2rem;   --e7: 3rem;
+
+  --raio-p: 6px;
+  --raio-g: 12px;
+  --largura: 68rem;
+}
+
+/* 2. BASE -------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte-texto);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+h1 { font-size: 1.75rem; }
+h2 { font-size: 1.25rem; }
+p  { margin: 0; }
+a  { color: var(--st-fazendo); }
+
+:focus-visible {
+  outline: 3px solid var(--alvorada);
+  outline-offset: 2px;
+}
+
+/* 3. LAYOUT ------------------------------------------------ */
+.container {
+  width: 100%;
+  max-width: var(--largura);
+  margin-inline: auto;
+  padding-inline: var(--e4);
+}
+.pagina { padding-block: var(--e5) var(--e7); }
+
+.pagina__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin-bottom: var(--e5);
+}
+.pagina__topo p { color: var(--texto-suave); }
+
+.aviso-temporario {
+  margin-bottom: var(--e4);
+  padding: var(--e2) var(--e4);
+  border: 2px dashed var(--alvorada-escuro);
+  border-radius: var(--raio-p);
+  background: #fff6e0;
+  font-size: 0.9rem;
+}
+
+/* 4. NAVEGAÇÃO --------------------------------------------- */
+.cabecalho { background: var(--noite); color: #fff; }
+.cabecalho__interno {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e2) var(--e5);
+  padding-block: var(--e3);
+}
+.marca {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  color: #fff;
+  font-family: var(--fonte-titulo);
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.marca svg { width: 1.75rem; height: 1.75rem; }
+
+.menu { display: flex; gap: var(--e1); list-style: none; margin: 0; padding: 0; }
+.menu a {
+  display: block;
+  padding: var(--e2) var(--e3);
+  border-radius: var(--raio-p);
+  color: #c9d3ea;
+  text-decoration: none;
+  font-weight: 600;
+}
+.menu a:hover { background: var(--noite-2); color: #fff; }
+.menu a[aria-current="page"] {
+  background: var(--noite-2);
+  color: #fff;
+  box-shadow: inset 0 -3px 0 var(--alvorada);
+}
+
+.rodape {
+  padding-block: var(--e5);
+  color: var(--texto-suave);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* 5. BOTÕES ------------------------------------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;            /* área de toque confortável no celular */
+  padding: var(--e2) var(--e5);
+  border: 2px solid transparent;
+  border-radius: var(--raio-p);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn--primario { background: var(--alvorada); color: var(--noite); }
+.btn--primario:hover { background: var(--alvorada-escuro); }
+.btn--secundario { background: var(--superficie); border-color: var(--borda); color: var(--texto); }
+.btn--secundario:hover { border-color: var(--noite); }
+.btn--perigo { background: var(--superficie); border-color: var(--st-atrasada); color: var(--st-atrasada); }
+.btn--perigo:hover { background: var(--st-atrasada-bg); }
+.btn--pequeno { min-height: 2.25rem; padding: var(--e1) var(--e3); font-size: 0.9rem; }
+
+/* 6. FORMULÁRIOS (usados nas próximas entregas) ------------ */
+.formulario {
+  display: grid;
+  gap: var(--e4);
+  padding: var(--e5);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-g);
+}
+.campo { display: grid; gap: var(--e1); }
+.campo label { font-weight: 600; }
+.campo input, .campo select, .campo textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--e2) var(--e3);
+  border: 2px solid var(--borda);
+  border-radius: var(--raio-p);
+  background: #fff;
+  color: var(--texto);
+  font: inherit;
+}
+.campo textarea { min-height: 7rem; resize: vertical; }
+.campo input:focus, .campo select:focus, .campo textarea:focus {
+  border-color: var(--noite-2);
+  outline: 3px solid var(--alvorada);
+  outline-offset: 0;
+}
+.campo__ajuda { color: var(--texto-suave); font-size: 0.875rem; }
+.campo__erro  { color: var(--st-atrasada); font-size: 0.875rem; font-weight: 600; }
+.formulario__acoes { display: flex; flex-wrap: wrap; gap: var(--e3); }
+
+/* 7. ETIQUETAS (status e prioridade) ----------------------- */
+.etiqueta {
+  display: inline-block;
+  padding: 0.15rem var(--e3);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.status--afazer    { background: var(--st-afazer-bg);    color: var(--st-afazer); }
+.status--fazendo   { background: var(--st-fazendo-bg);   color: var(--st-fazendo); }
+.status--concluida { background: var(--st-concluida-bg); color: var(--st-concluida); }
+.status--atrasada  { background: var(--st-atrasada-bg);  color: var(--st-atrasada); }
+
+/* prioridade: diferenciada por forma, não por cor */
+.prioridade--alta  { background: var(--noite); color: #fff; }
+.prioridade--media { border: 2px solid var(--noite); color: var(--noite); padding-block: 0.05rem; }
+.prioridade--baixa { border: 2px dashed var(--borda); color: var(--texto-suave); padding-block: 0.05rem; }
+
+/* 8. CARTÃO DE TAREFA -------------------------------------- */
+.tarefa {
+  --cor-status: var(--st-afazer);
+  --cor-status-bg: var(--st-afazer-bg);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--e4);
+  padding: var(--e4);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-left: 5px solid var(--cor-status);
+  border-radius: var(--raio-g);
+}
+.tarefa--fazendo   { --cor-status: var(--st-fazendo);   --cor-status-bg: var(--st-fazendo-bg); }
+.tarefa--concluida { --cor-status: var(--st-concluida); --cor-status-bg: var(--st-concluida-bg); }
+.tarefa--atrasada  { --cor-status: var(--st-atrasada);  --cor-status-bg: var(--st-atrasada-bg); }
+
+/* o "horário do despertador" */
+.tarefa__prazo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-self: start;
+  min-width: 4rem;
+  padding: var(--e3) var(--e2);
+  border-radius: var(--raio-p);
+  background: var(--cor-status-bg);
+  color: var(--cor-status);
+  line-height: 1;
+}
+.tarefa__dia {
+  font-family: var(--fonte-titulo);
+  font-size: 2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.tarefa__mes { margin-top: var(--e1); font-size: 0.85rem; font-weight: 700; }
+
+.tarefa__corpo { display: grid; gap: var(--e3); min-width: 0; }
+.tarefa__descricao { font-size: 1.05rem; font-weight: 600; overflow-wrap: anywhere; }
+.tarefa--concluida .tarefa__descricao { color: var(--texto-suave); text-decoration: line-through; }
+
+.tarefa__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e2) var(--e3); }
+.responsavel { display: inline-flex; align-items: center; gap: var(--e2); color: var(--texto-suave); font-size: 0.95rem; }
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 1.75rem; height: 1.75rem;
+  border-radius: 50%;
+  background: var(--noite-2);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.tarefa__acoes { margin-left: auto; }
+
+/* 9. PAINEL ------------------------------------------------ */
+.resumo {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--e3);
+  margin: 0 0 var(--e5);
+  padding: 0;
+  list-style: none;
+}
+.resumo__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e2);
+  padding: var(--e3) var(--e4);
+  border-radius: var(--raio-p);
+}
+.resumo__numero { font-family: var(--fonte-titulo); font-size: 1.75rem; font-weight: 800; }
+.resumo__nome { font-weight: 700; }
+
+.lista-tarefas { display: grid; gap: var(--e3); margin: 0; padding: 0; list-style: none; }
+
+.vazio {
+  padding: var(--e6) var(--e4);
+  border: 2px dashed var(--borda);
+  border-radius: var(--raio-g);
+  text-align: center;
+  color: var(--texto-suave);
+}
+.vazio .btn { margin-top: var(--e3); }
+
+/* 10. TELAS MAIORES (mobile first: o resto acima já é celular) */
+@media (min-width: 48rem) {
+  h1 { font-size: 2.25rem; }
+  .container { padding-inline: var(--e5); }
+  .resumo { grid-template-columns: repeat(4, 1fr); }
+  .tarefa { padding: var(--e5); }
+  .formulario { padding: var(--e6); max-width: 40rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
