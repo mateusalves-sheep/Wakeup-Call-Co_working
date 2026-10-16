@@ -1,24 +1,123 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contatos — WakeUp-Call</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='contatos.css') }}">
+</head>
+<body>
 
-{% block content %}
-  <h1>Contatos</h1>
+  <header>
+    <h1>WakeUp-Call</h1>
+    <nav>
+      <a href="{{ url_for('contatos.listar_e_criar') }}">Contatos</a>
+      <a href="#">Tarefas</a>
+    </nav>
+  </header>
 
-  {% with mensagens = get_flashed_messages(with_categories=true) %}
-    {% for categoria, msg in mensagens %}
-      <div class=" ">{{ msg }}</div>
-    {% endfor %}
-  {% endwith %}
+  <main>
 
-  <form method="POST" action="{{ url_for('contatos.listar_e_criar') }}" novalidate>
-    <div class="<!-- classe real -->">
-      <label for="nome">Nome *</label>
-      <input type="text" id="nome" name="nome"
-             value="{{ valores.nome or '' }}"
-             class="<!-- classe real -->">
-      {% if erros.nome %}
-        <span class="<!-- classe real -->">{{ erros.nome }}</span>
+    <h2>Contatos</h2>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% if mensagens %}
+        <ul class="mensagens">
+          {% for categoria, msg in mensagens %}
+            <li class="mensagem mensagem--{{ categoria }}">{{ msg }}</li>
+          {% endfor %}
+        </ul>
       {% endif %}
-    </div>
-  </form>
+    {% endwith %}
 
-{% endblock %}
+    <section class="secao">
+      <h3>Novo contato</h3>
+
+      <form method="POST" action="{{ url_for('contatos.listar_e_criar') }}" novalidate>
+
+        <div class="campo {% if erros.nome %}campo--erro{% endif %}">
+          <label for="nome">Nome *</label>
+          <input type="text"
+                 id="nome"
+                 name="nome"
+                 value="{{ valores.nome or '' }}"
+                 required
+                 minlength="2"
+                 maxlength="150">
+          {% if erros.nome %}
+            <span class="campo__erro">{{ erros.nome }}</span>
+          {% endif %}
+        </div>
+
+        <div class="campo {% if erros.email %}campo--erro{% endif %}">
+          <label for="email">E-mail</label>
+          <input type="email"
+                 id="email"
+                 name="email"
+                 value="{{ valores.email or '' }}"
+                 maxlength="150">
+          {% if erros.email %}
+            <span class="campo__erro">{{ erros.email }}</span>
+          {% endif %}
+        </div>
+
+        <div class="campo {% if erros.telefone %}campo--erro{% endif %}">
+          <label for="telefone">Telefone</label>
+          <input type="text"
+                 id="telefone"
+                 name="telefone"
+                 value="{{ valores.telefone or '' }}"
+                 maxlength="20">
+          {% if erros.telefone %}
+            <span class="campo__erro">{{ erros.telefone }}</span>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="botao botao--primario">Cadastrar</button>
+
+      </form>
+    </section>
+
+    <section class="secao">
+      <h3>Contatos cadastrados</h3>
+
+      {% if contatos %}
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Telefone</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for contato in contatos %}
+              <tr>
+                <td>{{ contato.nome }}</td>
+                <td>{{ contato.email or '—' }}</td>
+                <td>{{ contato.telefone or '—' }}</td>
+                <td>
+                  <form method="POST"
+                        action="{{ url_for('contatos.excluir', contato_id=contato.id) }}"
+                        onsubmit="return confirm('Tem certeza que deseja excluir {{ contato.nome }}?');">
+                    <button type="submit" class="botao botao--perigo">Excluir</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="vazio">Nenhum contato cadastrado ainda.</p>
+      {% endif %}
+    </section>
+
+  </main>
+
+  <footer>
+    <p>WakeUp-Call — projeto acadêmico</p>
+  </footer>
+
+</body>
+</html>
