@@ -11,9 +11,9 @@ class Usuario(db.Model, UserMixin):
     
 class Task(db.Model):
     task_id = db.Column(db.Integer, primary_key = True)
-    name_task = db.Column(db.String(200), unique = True, nullable = False)
+    name_task = db.Column(db.String(200), nullable = False)
     descricao = db.Column(db.Text, nullable = False)
-    status = db.Column(db.String(20), default = 'A fazer', nullable = False)
+    status = db.Column(db.String(20), default = 'A Fazer', nullable = False)
     deadline = db.Column(db.Date, nullable = False)
     prioridade = db.Column(db.String(20), nullable = False)
     create_by = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable = False)
