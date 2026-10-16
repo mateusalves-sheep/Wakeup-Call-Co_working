@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Tarefas{% endblock %} · WakeUpCall</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Figtree:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+  <header class="cabecalho">
+    <div class="container cabecalho__interno">
+      <a class="marca" href="/">
+        <!-- sol nascendo: ícone da marca -->
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M4 22a12 12 0 0 1 24 0z" fill="#f5a524"/>
+          <path d="M2 26h28" stroke="#c9d3ea" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        WakeUpCall
+      </a>
+
+      {# Os caminhos abaixo (/, /contatos, /tarefas/nova) PRECISAM ser
+         confirmados com Mateus Alves e Mateus Henrique. #}
+      <nav aria-label="Principal">
+        <ul class="menu">
+          <li><a href="/" {% if request.path == '/' %}aria-current="page"{% endif %}>Tarefas</a></li>
+          <li><a href="/contatos" {% if request.path.startswith('/contatos') %}aria-current="page"{% endif %}>Contatos</a></li>
+          <li><a href="/tarefas/nova" {% if request.path.startswith('/tarefas/nova') %}aria-current="page"{% endif %}>Nova tarefa</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container pagina">
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <footer class="rodape">WakeUpCall · Projeto da turma</footer>
+
+</body>
+</html>
