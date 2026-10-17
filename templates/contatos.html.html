@@ -1,123 +1,99 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contatos — WakeUp-Call</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='contatos.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
 
-  <header>
-    <h1>WakeUp-Call</h1>
-    <nav>
-      <a href="{{ url_for('contatos.listar_e_criar') }}">Contatos</a>
-      <a href="#">Tarefas</a>
-    </nav>
-  </header>
+{% block titulo %}Criar conta{% endblock %}
 
-  <main>
+{% block conteudo %}
+<div class="auth-wrapper">
+  <div class="auth-card">
 
-    <h2>Contatos</h2>
+    <div class="pagina__topo">
+      <div>
+        <h1>Criar conta</h1>
+        <p>Cadastre-se para começar a organizar suas tarefas.</p>
+      </div>
+    </div>
 
     {% with mensagens = get_flashed_messages(with_categories=true) %}
       {% if mensagens %}
-        <ul class="mensagens">
-          {% for categoria, msg in mensagens %}
-            <li class="mensagem mensagem--{{ categoria }}">{{ msg }}</li>
-          {% endfor %}
-        </ul>
+        {% for categoria, msg in mensagens %}
+          <p class="alerta-{{ 'erro' if categoria == 'erro' else 'sucesso' }}" role="alert">{{ msg }}</p>
+        {% endfor %}
       {% endif %}
     {% endwith %}
 
-    <section class="secao">
-      <h3>Novo contato</h3>
+    {% if erro_geral %}
+      <p class="alerta-erro" role="alert">{{ erro_geral }}</p>
+    {% endif %}
 
-      <form method="POST" action="{{ url_for('contatos.listar_e_criar') }}" novalidate>
+    <form class="formulario" method="POST" action="{{ url_for('auth.register') }}" novalidate id="form-register">
 
-        <div class="campo {% if erros.nome %}campo--erro{% endif %}">
-          <label for="nome">Nome *</label>
-          <input type="text"
-                 id="nome"
-                 name="nome"
-                 value="{{ valores.nome or '' }}"
-                 required
-                 minlength="2"
-                 maxlength="150">
-          {% if erros.nome %}
-            <span class="campo__erro">{{ erros.nome }}</span>
-          {% endif %}
-        </div>
+      <div class="campo">
+        <label for="username">Usuário</label>
+        <input type="text" id="username" name="username"
+               value="{{ valores.username if valores else '' }}"
+               autocomplete="username" minlength="3" maxlength="150" required autofocus
+               {% if erros and erros.username %}aria-invalid="true" aria-describedby="erro-username"{% endif %}>
+        {% if erros and erros.username %}
+          <p class="campo__erro" id="erro-username">{{ erros.username }}</p>
+        {% endif %}
+      </div>
 
-        <div class="campo {% if erros.email %}campo--erro{% endif %}">
-          <label for="email">E-mail</label>
-          <input type="email"
-                 id="email"
-                 name="email"
-                 value="{{ valores.email or '' }}"
-                 maxlength="150">
-          {% if erros.email %}
-            <span class="campo__erro">{{ erros.email }}</span>
-          {% endif %}
-        </div>
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha"
+               autocomplete="new-password" minlength="6" required
+               {% if erros and erros.senha %}aria-invalid="true" aria-describedby="erro-senha"{% endif %}>
+        <p class="campo__ajuda">Mínimo 6 caracteres.</p>
+        {% if erros and erros.senha %}
+          <p class="campo__erro" id="erro-senha">{{ erros.senha }}</p>
+        {% endif %}
+      </div>
 
-        <div class="campo {% if erros.telefone %}campo--erro{% endif %}">
-          <label for="telefone">Telefone</label>
-          <input type="text"
-                 id="telefone"
-                 name="telefone"
-                 value="{{ valores.telefone or '' }}"
-                 maxlength="20">
-          {% if erros.telefone %}
-            <span class="campo__erro">{{ erros.telefone }}</span>
-          {% endif %}
-        </div>
+      <div class="campo">
+        <label for="confirmar_senha">Confirmar senha</label>
+        <input type="password" id="confirmar_senha" name="confirmar_senha"
+               autocomplete="new-password" minlength="6" required
+               {% if erros and erros.confirmar_senha %}aria-invalid="true" aria-describedby="erro-confirmar"{% endif %}>
+        <p class="campo__erro" id="erro-confirmar" hidden></p>
+        {% if erros and erros.confirmar_senha %}
+          <p class="campo__erro" id="erro-confirmar-servidor">{{ erros.confirmar_senha }}</p>
+        {% endif %}
+      </div>
 
-        <button type="submit" class="botao botao--primario">Cadastrar</button>
+      <div class="formulario__acoes">
+        <button type="submit" class="btn btn--primario">Criar conta</button>
+        <a class="btn btn--secundario" href="{{ url_for('auth.login') }}">Já tenho conta</a>
+      </div>
+    </form>
 
-      </form>
-    </section>
+  </div>
+</div>
+{% endblock %}
 
-    <section class="secao">
-      <h3>Contatos cadastrados</h3>
+{% block head_extra %}
+<script>
+  (function () {
+    document.addEventListener('DOMContentLoaded', function () {
+      const form     = document.getElementById('form-register');
+      const senha    = document.getElementById('senha');
+      const confirma = document.getElementById('confirmar_senha');
+      const erroEl   = document.getElementById('erro-confirmar');
 
-      {% if contatos %}
-        <table class="tabela">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>E-mail</th>
-              <th>Telefone</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for contato in contatos %}
-              <tr>
-                <td>{{ contato.nome }}</td>
-                <td>{{ contato.email or '—' }}</td>
-                <td>{{ contato.telefone or '—' }}</td>
-                <td>
-                  <form method="POST"
-                        action="{{ url_for('contatos.excluir', contato_id=contato.id) }}"
-                        onsubmit="return confirm('Tem certeza que deseja excluir {{ contato.nome }}?');">
-                    <button type="submit" class="botao botao--perigo">Excluir</button>
-                  </form>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p class="vazio">Nenhum contato cadastrado ainda.</p>
-      {% endif %}
-    </section>
+      function checarSenhas() {
+        if (confirma.value === '') { erroEl.hidden = true; return true; }
+        if (senha.value !== confirma.value) {
+          erroEl.textContent = 'As senhas não conferem.';
+          erroEl.hidden = false;
+          return false;
+        }
+        erroEl.hidden = true;
+        return true;
+      }
 
-  </main>
-
-  <footer>
-    <p>WakeUp-Call — projeto acadêmico</p>
-  </footer>
-
-</body>
-</html>
+      confirma.addEventListener('input', checarSenhas);
+      senha.addEventListener('input', function () { if (confirma.value) checarSenhas(); });
+      form.addEventListener('submit', function (e) { if (!checarSenhas()) e.preventDefault(); });
+    });
+  })();
+</script>
+{% endblock %}
