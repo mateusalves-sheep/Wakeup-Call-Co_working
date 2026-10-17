@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — WakeUp-Call</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+</head>
+<body class="auth-body">
+
+  <main class="auth-card">
+    <header class="auth-header">
+      <h1>WakeUp-Call</h1>
+      <p class="auth-subtitulo">Entre para acessar suas tarefas</p>
+    </header>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% if mensagens %}
+        <ul class="mensagens">
+          {% for categoria, msg in mensagens %}
+            <li class="mensagem mensagem--{{ categoria }}">{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST"
+          action="{{ url_for('auth.login') }}"
+          novalidate>
+
+      <div class="campo {% if erros.username %}campo--erro{% endif %}">
+        <label for="username">Usuário</label>
+        <input type="text"
+               id="username"
+               name="username"
+               value="{{ valores.username or '' }}"
+               autocomplete="username"
+               autofocus
+               required
+               maxlength="150">
+        {% if erros.username %}
+          <span class="campo__erro">{{ erros.username }}</span>
+        {% endif %}
+      </div>
+
+      <div class="campo {% if erros.senha %}campo--erro{% endif %}">
+        <label for="senha">Senha</label>
+        <input type="password"
+               id="senha"
+               name="senha"
+               autocomplete="current-password"
+               required>
+        {% if erros.senha %}
+          <span class="campo__erro">{{ erros.senha }}</span>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="botao botao--primario">Entrar</button>
+    </form>
+
+    <p class="auth-link">
+      Ainda não tem conta? <a href="{{ url_for('auth.register') }}">Cadastre-se</a>
+    </p>
+  </main>
+
+</body>
+</html>
