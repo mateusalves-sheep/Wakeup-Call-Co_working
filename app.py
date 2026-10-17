@@ -40,9 +40,34 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + DATABASE_PATH
 
 db.init_app(app)
 
-@app.route("/")
-def inicio():
-    return "<h1>WakeUp-Call</h1><p>Projeto iniciado com sucesso!</p>"
+@app.route("/", methods=["GET","POST"])
+def login():
+    erros = {}
+    valores = {"username" : ""}
+    
+    if request.method == "POST":
+        username = request.form.get("username","").strip()
+        senha = request.form.get("senha","")
+        
+        valores["username"] = username
+        
+        usuario = Usuario.query.filter_by(username=username).first()
+        
+        if not username:
+            erros["username"] = "Informe o nome do seu usuário."
+    
+        if not senha:
+            erros["senha"] = "informe a sua senha."
+            
+        if not erros:
+            if usuario and check_password_hash(usuario.senha, senha):
+                login_user(usuario)
+                flash("Login realizado com sucesso!")
+                return redirect(url_for("listar_tarefas"))
+            
+            erros["senha"] = "Usuário ou senha inválidos."
+            
+    return render_template("login.html", erros=erros,valores=valores)
 
 @app.route("/tarefas")
 def listar_tarefas():
@@ -98,7 +123,7 @@ def cadastrar_usuario():
             return render_template("cadastro.html.html", erros=erros, valores=valores)
 
         flash("Usuário cadastrado com sucesso!")
-        return redirect(url_for("inicio"))
+        return redirect(url_for("login"))
 
     return render_template("cadastro.html.html", erros=erros, valores=valores)
 
