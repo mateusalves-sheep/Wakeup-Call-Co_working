@@ -313,3 +313,56 @@ a  { color: var(--st-fazendo); }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* 11. AUTENTICAÇÃO ----------------------------------------- */
+.auth {
+  display: grid;
+  place-items: center;
+  min-height: 70vh;
+  padding-block: var(--e6);
+}
+
+.auth__painel {
+  display: grid;
+  gap: var(--e5);
+  width: 100%;
+  max-width: 28rem;
+  padding: var(--e5);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-g);
+}
+
+.auth__cabecalho {
+  display: grid;
+  gap: var(--e2);
+  text-align: center;
+}
+
+.auth__cabecalho p {
+  color: var(--texto-suave);
+}
+
+.auth__link {
+  text-align: center;
+}
+
+.auth__link a {
+  font-weight: 700;
+}
+
+.auth__erro {
+  color: var(--st-atrasada);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.auth__painel .btn {
+  width: 100%;
+}
+
+@media (min-width: 48rem) {
+  .auth__painel {
+    padding: var(--e6);
+  }
+}
