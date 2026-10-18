@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block titulo %}Contatos{% endblock %}
+
+{% block conteudo %}
+{# ---- Variáveis esperadas do backend ----
+   contatos   : lista de Usuario (.id, .username, .funcao,
+                .tasks_criadas, .tasks_compartilhadas)
+   erro_geral : (opcional) mensagem geral
+#}
+
+<div class="pagina__topo">
+  <div>
+    <h1>Contatos</h1>
+    <p>Usuários cadastrados na plataforma.</p>
+  </div>
+</div>
+
+{% if erro_geral %}
+  <p class="alerta-erro" role="alert">{{ erro_geral }}</p>
+{% endif %}
+
+{% with mensagens = get_flashed_messages(with_categories=true) %}
+  {% if mensagens %}
+    {% for categoria, msg in mensagens %}
+      <p class="alerta-{{ 'erro' if categoria == 'erro' else 'sucesso' }}" role="alert">{{ msg }}</p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<section class="painel" aria-labelledby="titulo-lista">
+  <div class="painel__topo">
+    <h2 id="titulo-lista">Usuários cadastrados</h2>
+    <input
+      class="painel__busca"
+      id="busca-contatos"
+      type="search"
+      placeholder="Buscar por usuário ou função..."
+      aria-label="Buscar contatos">
+  </div>
+
+  {% if contatos %}
+    <div class="tabela-wrapper">
+      <table class="tabela">
+        <thead>
+          <tr>
+            <th scope="col">Usuário</th>
+            <th scope="col">Função</th>
+            <th scope="col">Tarefas criadas</th>
+            <th scope="col">Compartilhadas</th>
+          </tr>
+        </thead>
+        <tbody id="lista-contatos">
+          {% for usuario in contatos %}
+            <tr>
+              <td>
+                <span class="responsavel">
+                  <span class="avatar" aria-hidden="true">{{ usuario.username[0] | upper }}</span>
+                  <span class="responsavel__nome">{{ usuario.username }}</span>
+                </span>
+              </td>
+              <td>
+                <span class="etiqueta etiqueta--funcao">{{ usuario.funcao }}</span>
+              </td>
+              <td>{{ usuario.tasks_criadas | length }}</td>
+              <td>{{ usuario.tasks_compartilhadas | length }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="vazio" id="vazio-busca" hidden>
+      <p>Nenhum usuário encontrado para essa busca.</p>
+    </div>
+  {% else %}
+    <div class="vazio">
+      <p>Nenhum usuário cadastrado ainda.</p>
+      <a class="btn btn--primario" href="{{ url_for('auth.register') }}">Cadastrar primeiro usuário</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block head_extra %}
+<script>
+  (function () {
+    document.addEventListener('DOMContentLoaded', function () {
+      const busca    = document.getElementById('busca-contatos');
+      const vazio    = document.getElementById('vazio-busca');
+      const tabela   = document.querySelector('.tabela-wrapper');
+      if (!busca || !tabela) return;
+
+      const linhas = Array.from(tabela.querySelectorAll('tbody tr'));
+
+      busca.addEventListener('input', function () {
+        const termo = busca.value.trim().toLocaleLowerCase('pt-BR');
+        let visiveis = 0;
+
+        linhas.forEach(function (linha) {
+          const combina = linha.textContent.toLocaleLowerCase('pt-BR').includes(termo);
+          linha.hidden = !combina;
+          if (combina) visiveis++;
+        });
+
+        if (vazio) vazio.hidden = visiveis !== 0;
+        tabela.hidden = visiveis === 0;
+      });
+    });
+  })();
+</script>
+{% endblock %}
