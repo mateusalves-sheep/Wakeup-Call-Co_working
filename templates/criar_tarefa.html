@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block titulo %}Nova tarefa{% endblock %}
+
+{% block conteudo %}
+{# ---- Variáveis esperadas do backend ----
+   usuarios : lista de usuários reais (cada um com .id e .username)  [obrigatória]
+   valores  : (opcional) request.form, para manter o que foi digitado após erro
+   Mensagens de erro chegam por flash() e são exibidas pelo base.html.
+#}
+{% set v = valores if valores else {} %}
+{% set prioridades = ['Alta', 'Média', 'Baixa'] %}
+
+<div class="pagina__topo">
+  <div>
+    <h1>Nova tarefa</h1>
+    <p>Todos os campos são obrigatórios.</p>
+  </div>
+</div>
+
+<form class="formulario" method="POST" action="{{ url_for('criar_tarefa') }}">
+  {# TODO(Mateus Alves): se usar Flask-WTF, incluir aqui o token CSRF. #}
+
+  <div class="campo">
+    <label for="titulo">Título</label>
+    <input type="text" id="titulo" name="titulo" maxlength="200" required
+           value="{{ v.titulo or '' }}">
+  </div>
+
+  <div class="campo">
+    <label for="descricao">Descrição</label>
+    <textarea id="descricao" name="descricao" required>{{ v.descricao or '' }}</textarea>
+  </div>
+
+  <div class="campo">
+    <label for="prazo">Prazo</label>
+    <input type="date" id="prazo" name="prazo" required value="{{ v.prazo or '' }}">
+  </div>
+
+  <div class="campo">
+    <label for="prioridade">Prioridade</label>
+    <select id="prioridade" name="prioridade" required>
+      <option value="" disabled {% if not v.prioridade %}selected{% endif %}>Selecione…</option>
+      {% for p in prioridades %}
+        <option value="{{ p }}" {% if v.prioridade == p %}selected{% endif %}>{{ p }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="campo">
+    <label for="responsavel">Responsável</label>
+    {% if usuarios %}
+      <select id="responsavel" name="responsavel" required>
+        <option value="" disabled {% if not v.responsavel %}selected{% endif %}>Selecione…</option>
+        {% for u in usuarios %}
+          <option value="{{ u.id }}" {% if v.responsavel | string == u.id | string %}selected{% endif %}>{{ u.username }}</option>
+        {% endfor %}
+      </select>
+    {% else %}
+      <p class="campo__ajuda">Nenhum usuário disponível para ser responsável.</p>
+    {% endif %}
+  </div>
+
+  <div class="formulario__acoes">
+    <button type="submit" class="btn btn--primario" {% if not usuarios %}disabled{% endif %}>Salvar tarefa</button>
+    <a class="btn btn--secundario" href="{{ url_for('listar_tarefas') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

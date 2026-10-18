@@ -28,15 +28,22 @@
          confirmados com Mateus Alves e Mateus Henrique. #}
       <nav aria-label="Principal">
         <ul class="menu">
-          <li><a href="/" {% if request.path == '/' %}aria-current="page"{% endif %}>Tarefas</a></li>
+          <li><a href="{{ url_for('listar_tarefas') }}" {% if request.endpoint == 'listar_tarefas' %}aria-current="page"{% endif %}>Tarefas</a></li>
           <li><a href="/contatos" {% if request.path.startswith('/contatos') %}aria-current="page"{% endif %}>Contatos</a></li>
-          <li><a href="/tarefas/nova" {% if request.path.startswith('/tarefas/nova') %}aria-current="page"{% endif %}>Nova tarefa</a></li>
+          <li><a href="{{ url_for('criar_tarefa') }}" {% if request.endpoint == 'criar_tarefa' %}aria-current="page"{% endif %}>Nova tarefa</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
   <main class="container pagina">
+        {% with mensagens = get_flashed_messages() %}
+      {% if mensagens %}
+        <div role="status">
+          {% for m in mensagens %}<p class="alerta">{{ m }}</p>{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
     {% block conteudo %}{% endblock %}
   </main>
 
