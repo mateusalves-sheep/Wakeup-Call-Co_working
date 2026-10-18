@@ -98,15 +98,25 @@
     {% if e.status %}<p class="campo__erro" id="erro-status">{{ e.status }}</p>{% endif %}
   </div>
   {% endif %}
-
+    
   <div class="formulario__acoes">
     <button type="submit" class="btn btn--primario" {% if not usuarios %}disabled{% endif %}>
       {{ 'Salvar alterações' if editando else 'Salvar tarefa' }}
     </button>
-    <a class="btn btn--secundario" href="{{ url_for('listar_tarefas') }}">Cancelar</a>
-    {% if editando and url_excluir %}
-      <a class="btn btn--perigo" href="{{ url_excluir }}">Excluir tarefa</a>
-    {% endif %}
+
+    <a class="btn btn--secundario" href="{{ url_for('listar_tarefas') }}">
+      Cancelar
+    </a>
   </div>
 </form>
+
+
+    {% if editando and url_excluir %}
+      <form method="POST" action="{{ url_excluir }}">
+        <button type="submit" class="btn btn--perigo"
+            onclick="return confirm('Tem certeza de que deseja excluir esta tarefa?')">
+          Excluir tarefa
+        </button>
+      </form>
+    {% endif %}
 {% endblock %}

@@ -3,14 +3,21 @@ from extensions import db
 from models import Usuario, Task
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import date
 import os
 
 def formatar_tarefa(tarefa):
+    
+    if tarefa.status != "Concluída" and tarefa.deadline < date.today():
+        status_exibido = "Atrasada"
+    else:
+        status_exibido = tarefa.status
+    
     tarefa_dicionario = {
         "id" : tarefa.task_id,
         "titulo" : tarefa.name_task,
         "descricao" : tarefa.descricao,
-        "status" : tarefa.status,
+        "status" : status_exibido,
         "prazo" : tarefa.deadline.isoformat(),
         "prioridade" : tarefa.prioridade,
         "responsavel" : tarefa.receiver.username
@@ -18,6 +25,9 @@ def formatar_tarefa(tarefa):
     }
     
     return tarefa_dicionario
+
+def modificar_tarefa(tarefa):
+    return (tarefa.shared_with == current_user.id or tarefa.create_by == current_user.id)
 
 app = Flask(__name__)
 
@@ -70,6 +80,7 @@ def login():
     return render_template("login.html", erros=erros,valores=valores)
 
 @app.route("/tarefas")
+@login_required
 def listar_tarefas():
     tarefas = Task.query.all()
     
@@ -127,8 +138,221 @@ def cadastrar_usuario():
 
     return render_template("cadastro.html.html", erros=erros, valores=valores)
 
+@app.route("/tarefas/nova", methods=["GET","POST"])
+@login_required
+def criar_tarefa():
+    usuarios = Usuario.query.order_by(Usuario.username).all()
+    
+    if request.method == "POST":
+        titulo = request.form.get("titulo","").strip()
+        descricao = request.form.get("descricao","").strip()
+        prazo_texto = request.form.get("prazo","")
+        prioridade = request.form.get("prioridade","")
+        responsavel_id = request.form.get("responsavel","")
+        
+        if not titulo or not descricao or not prazo_texto or not prioridade or not responsavel_id:
+            flash("Preencha todos os campos.")
+            return render_template("criar_tarefa.html",usuarios=usuarios)
+        
+        try:
+            prazo = date.fromisoformat(prazo_texto)
+            responsavel_id = int(responsavel_id)
+        except ValueError:
+            flash("Prazo ou responsável inválido.")
+            return render_template("criar_tarefa.html", usuarios=usuarios)
+        
+        usuario_responsavel = db.session.get(Usuario, responsavel_id)
+        
+        if usuario_responsavel is None:
+            flash("Usuário selecionado não existe")
+            return render_template("criar_tarefa.html", usuarios=usuarios)
+        
+        
+        if prioridade not in ["Alta", "Média", "Baixa"]:
+            flash("Prioridade inválida.")
+            return render_template("criar_tarefa.html", usuarios=usuarios)
+        
+        nova_tarefa = Task(
+            name_task=titulo,
+            descricao=descricao,
+            deadline=prazo,
+            prioridade=prioridade,
+            create_by=current_user.id,
+            shared_with=usuario_responsavel.id
+        )
+        
+        try:
+            db.session.add(nova_tarefa)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash("Ocorreu um erro ao criar a tarefa. Por favor, tente novamente.")
+            return render_template("criar_tarefa.html", usuarios=usuarios)
+        
+        return redirect(url_for("listar_tarefas"))
+    
+    return render_template("criar_tarefa.html", usuarios=usuarios)
 
+@app.route("/tarefas/<int:task_id>/editar", methods=["GET","POST"])
+@login_required
+def editar_tarefa(task_id):
+    tarefa = Task.query.get_or_404(task_id)
+    
+    if not modificar_tarefa(tarefa):
+        flash("Você não tem permissão para editar esta tarefa.")
+        return redirect(url_for("listar_tarefas"))
+    
+    usuarios = Usuario.query.order_by(Usuario.username).all()
+    
+    if request.method == "POST":
+        titulo = request.form.get("name_task", "").strip()
+        descricao = request.form.get("descricao","").strip()
+        prazo_texto = request.form.get("deadline","")
+        prioridade = request.form.get("prioridade","")
+        responsavel_id = request.form.get("shared_with","")
+        status = request.form.get("status","")
+        
+        if not status:
+            status = tarefa.status
+        
+        erros = {}
+        
+        if not titulo:
+            erros["name_task"] = "Informe o título da tarefa."
+    
+        if not descricao:
+            erros["descricao"] = "Informe a descrição da tarefa."
+            
+        try:
+            prazo = date.fromisoformat(prazo_texto)
+        except ValueError:
+            erros["deadline"] = "Informe uma data válida."
+            
+        try:
+            responsavel_id = int(responsavel_id)
+        except (ValueError, TypeError):
+            erros["shared_with"] = "Selecione um usuário válido."
+            
+        if prioridade not in ["Alta", "Média","Baixa"]:
+            erros["prioridade"] = "Selecione uma prioridade válida."
 
+        if status not in ["A Fazer", "Fazendo", "Concluída"]:
+            erros["status"] = "Selecione um status válido."
+            
+        usuario_responsavel = None
+        
+        if "shared_with" not in erros:
+            usuario_responsavel = db.session.get(Usuario, responsavel_id)
+             
+        if usuario_responsavel is None:
+            erros["shared_with"] = "Usuário não encontrado."
+            
+        if erros:
+            return render_template(
+                    "tarefa_form.html", 
+                    modo="editar", 
+                    usuarios=usuarios, 
+                    valores = request.form, 
+                    erros=erros,
+                    erro_geral=None,
+                    url_excluir=url_for(
+                                "excluir_tarefa",
+                                task_id=tarefa.task_id
+                                )
+                            )
+            
+        tarefa.name_task = titulo
+        tarefa.descricao = descricao
+        tarefa.deadline = prazo
+        tarefa.prioridade = prioridade
+        tarefa.shared_with = responsavel_id
+        tarefa.status = status
+        
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            
+            return render_template(
+                    "tarefa_form.html", 
+                    modo="editar", 
+                    usuarios=usuarios, 
+                    valores = request.form, 
+                    erros={},
+                    erro_geral="Não foi possível fazer alterações",
+                    url_excluir=url_for(
+                                "excluir_tarefa",
+                                task_id=tarefa.task_id
+                                )
+                            )
+            
+        flash("Tarefa atualizada com sucesso.")
+        return redirect(url_for("listar_tarefas"))
+    
+    return render_template(
+            "tarefa_form.html", 
+            modo="editar", 
+            usuarios=usuarios, 
+            valores = tarefa, 
+            erros={},
+            erro_geral=None,
+            url_excluir=url_for(
+                        "excluir_tarefa",
+                        task_id=tarefa.task_id
+                        )
+                    )
+    
+@app.route("/tarefas/<int:task_id>/status", methods=["POST"])
+@login_required
+def alterar_status(task_id):
+    tarefa = Task.query.get_or_404(task_id)
+    
+    if not modificar_tarefa(tarefa):
+        flash("Você não tem permissão para alterar o status desta tarefa.")
+        return redirect(url_for("listar_tarefas"))
+
+    novo_status = request.form.get("status","")
+    
+    status_validos = ["A Fazer", "Fazendo", "Concluída"]
+    
+    if novo_status not in status_validos:
+        flash("Status inválido.")
+        return redirect(url_for("listar_tarefas"))
+    
+    tarefa.status = novo_status
+    
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        flash("Não foi possível atualizar status.")
+        return redirect(url_for("listar_tarefas"))
+    
+    flash("Status atualizado com sucesso.")
+    return redirect(url_for("listar_tarefas"))
+
+@app.route("/tarefas/<int:task_id>/excluir", methods=["POST"])
+@login_required
+def excluir_tarefa(task_id):
+    tarefa = Task.query.get_or_404(task_id)
+    
+    if not modificar_tarefa(tarefa):
+        flash("Você não tem permissão para excluir esta tarefa.")
+        return redirect(url_for("listar_tarefas"))
+    
+    try:
+        db.session.delete(tarefa)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        flash("Não foi possível excluir esta tarefa.")
+        return redirect(url_for("listar_tarefas"))
+    
+    flash("Tarefa excluída com sucesso.")
+    return redirect(url_for("listar_tarefas"))
+    
+        
+    
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
