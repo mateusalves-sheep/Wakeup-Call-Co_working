@@ -366,3 +366,12 @@ a  { color: var(--st-fazendo); }
     padding: var(--e6);
   }
 }
+.alerta {
+  margin-bottom: var(--e3);
+  padding: var(--e3) var(--e4);
+  border: 1px solid var(--borda);
+  border-left: 5px solid var(--alvorada);
+  border-radius: var(--raio-p);
+  background: var(--superficie);
+  font-weight: 600;
+}
