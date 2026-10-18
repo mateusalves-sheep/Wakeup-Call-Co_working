@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ 'Editar tarefa' if modo == 'editar' else 'Nova tarefa' }}{% endblock %}
+
+{% block conteudo %}
+{# ---- Variáveis esperadas do backend (ver lista de pendências) ----
+   modo        : 'criar' ou 'editar'
+   usuarios    : lista de usuários reais (cada um com .id e .username)
+   valores     : (opcional) objeto Task na edição, ou request.form após erro
+   erros       : (opcional) dict {nome_do_campo: mensagem}
+   erro_geral  : (opcional) mensagem que não pertence a um campo
+   url_excluir : (opcional, só edição) página de confirmação de exclusão
+#}
+{% set editando = (modo == 'editar') %}
+{% set v = valores if valores else {} %}
+{% set e = erros if erros else {} %}
+{% set prioridades = ['Alta', 'Média', 'Baixa'] %}
+{% set status_editaveis = ['A Fazer', 'Fazendo', 'Concluída'] %}
+
+<div class="pagina__topo">
+  <div>
+    <h1>{{ 'Editar tarefa' if editando else 'Nova tarefa' }}</h1>
+    <p>Todos os campos são obrigatórios.</p>
+  </div>
+</div>
+
+{% if erro_geral %}
+  <p class="alerta-erro" role="alert">{{ erro_geral }}</p>
+{% endif %}
+
+<form class="formulario" method="POST">
+  {# TODO(Mateus Alves): se usar Flask-WTF, incluir aqui o token CSRF. #}
+
+  <div class="campo">
+    <label for="name_task">Título</label>
+    <input type="text" id="name_task" name="name_task" maxlength="200" required
+           value="{{ v.name_task or '' }}"
+           {% if e.name_task %}aria-invalid="true" aria-describedby="erro-name_task"{% endif %}>
+    {% if e.name_task %}<p class="campo__erro" id="erro-name_task">{{ e.name_task }}</p>{% endif %}
+  </div>
+
+  <div class="campo">
+    <label for="descricao">Descrição</label>
+    <textarea id="descricao" name="descricao" required
+              {% if e.descricao %}aria-invalid="true" aria-describedby="erro-descricao"{% endif %}>{{ v.descricao or '' }}</textarea>
+    {% if e.descricao %}<p class="campo__erro" id="erro-descricao">{{ e.descricao }}</p>{% endif %}
+  </div>
+
+  <div class="campo">
+    <label for="deadline">Prazo</label>
+    <input type="date" id="deadline" name="deadline" required
+           value="{{ v.deadline or '' }}"
+           {% if e.deadline %}aria-invalid="true" aria-describedby="erro-deadline"{% endif %}>
+    {% if e.deadline %}<p class="campo__erro" id="erro-deadline">{{ e.deadline }}</p>{% endif %}
+  </div>
+
+  <div class="campo">
+    <label for="prioridade">Prioridade</label>
+    <select id="prioridade" name="prioridade" required
+            {% if e.prioridade %}aria-invalid="true" aria-describedby="erro-prioridade"{% endif %}>
+      <option value="" disabled {% if not v.prioridade %}selected{% endif %}>Selecione…</option>
+      {% for p in prioridades %}
+        <option value="{{ p }}" {% if v.prioridade == p %}selected{% endif %}>{{ p }}</option>
+      {% endfor %}
+    </select>
+    {% if e.prioridade %}<p class="campo__erro" id="erro-prioridade">{{ e.prioridade }}</p>{% endif %}
+  </div>
+
+  <div class="campo">
+    <label for="shared_with">Responsável</label>
+    {% if usuarios %}
+      <select id="shared_with" name="shared_with" required
+              {% if e.shared_with %}aria-invalid="true" aria-describedby="erro-shared_with"{% endif %}>
+        <option value="" disabled {% if not v.shared_with %}selected{% endif %}>Selecione…</option>
+        {% for u in usuarios %}
+          <option value="{{ u.id }}" {% if v.shared_with | string == u.id | string %}selected{% endif %}>{{ u.username }}</option>
+        {% endfor %}
+      </select>
+    {% else %}
+      <p class="campo__ajuda">Nenhum usuário disponível para ser responsável.</p>
+    {% endif %}
+    {% if e.shared_with %}<p class="campo__erro" id="erro-shared_with">{{ e.shared_with }}</p>{% endif %}
+  </div>
+
+  {% if editando %}
+  <div class="campo">
+    <label for="status">Status</label>
+    <select id="status" name="status"
+            {% if e.status %}aria-invalid="true" aria-describedby="erro-status"{% endif %}>
+      {% if v.status == 'Atrasada' %}
+        <option value="" selected>Manter status atual (Atrasada)</option>
+      {% endif %}
+      {% for s in status_editaveis %}
+        <option value="{{ s }}" {% if v.status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <p class="campo__ajuda">"Atrasada" é definido automaticamente pelo prazo e não pode ser escolhido.</p>
+    {% if e.status %}<p class="campo__erro" id="erro-status">{{ e.status }}</p>{% endif %}
+  </div>
+  {% endif %}
+
+  <div class="formulario__acoes">
+    <button type="submit" class="btn btn--primario" {% if not usuarios %}disabled{% endif %}>
+      {{ 'Salvar alterações' if editando else 'Salvar tarefa' }}
+    </button>
+    <a class="btn btn--secundario" href="{{ url_for('listar_tarefas') }}">Cancelar</a>
+    {% if editando and url_excluir %}
+      <a class="btn btn--perigo" href="{{ url_excluir }}">Excluir tarefa</a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}
