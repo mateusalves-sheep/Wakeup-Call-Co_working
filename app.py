@@ -136,7 +136,7 @@ def cadastrar_usuario():
         flash("Usuário cadastrado com sucesso!")
         return redirect(url_for("login"))
 
-    return render_template("cadastro.html.html", erros=erros, valores=valores)
+    return render_template("cadastro.html", erros=erros, valores=valores)
 
 @app.route("/tarefas/nova", methods=["GET","POST"])
 @login_required
@@ -350,9 +350,15 @@ def excluir_tarefa(task_id):
     
     flash("Tarefa excluída com sucesso.")
     return redirect(url_for("listar_tarefas"))
+
+@app.route("/contatos")
+@login_required
+def listar_contatos():
+    contatos = Usuario.query.order_by(Usuario.username.asc()).all()
+    
+    return render_template("contatos.html",contatos=contatos)
     
         
-    
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
