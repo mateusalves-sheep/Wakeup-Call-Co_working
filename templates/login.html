@@ -1,67 +1,38 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Entrar — WakeUp-Call</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body class="auth-body">
+{% extends "base.html" %}
 
-  <main class="auth-card">
-    <header class="auth-header">
-      <h1>WakeUp-Call</h1>
-      <p class="auth-subtitulo">Entre para acessar suas tarefas</p>
-    </header>
+{% block titulo %}Entrar{% endblock %}
 
-    {% with mensagens = get_flashed_messages(with_categories=true) %}
-      {% if mensagens %}
-        <ul class="mensagens">
-          {% for categoria, msg in mensagens %}
-            <li class="mensagem mensagem--{{ categoria }}">{{ msg }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+{% block conteudo %}
+{# Variáveis enviadas pela rota login(): erros (dict) e valores (dict). #}
+<div class="auth">
+  <section class="auth__painel" aria-labelledby="titulo-login">
+    <div class="auth__cabecalho">
+      <h1 id="titulo-login">Entrar</h1>
+      <p>Entre para acessar suas tarefas.</p>
+    </div>
 
-    <form method="POST"
-          action="{{ url_for('login') }}"
-          novalidate>
+    <form class="formulario" method="POST" action="{{ url_for('login') }}" novalidate>
+      {# TODO: se o grupo adotar Flask-WTF, incluir o token CSRF aqui. #}
 
-      <div class="campo {% if erros.username %}campo--erro{% endif %}">
+      <div class="campo">
         <label for="username">Usuário</label>
-        <input type="text"
-               id="username"
-               name="username"
-               value="{{ valores.username or '' }}"
-               autocomplete="username"
-               autofocus
-               required
-               maxlength="150">
-        {% if erros.username %}
-          <span class="campo__erro">{{ erros.username }}</span>
-        {% endif %}
+        <input type="text" id="username" name="username" maxlength="150" required autofocus
+               autocomplete="username" value="{{ valores.username or '' }}"
+               {% if erros.username %}aria-invalid="true" aria-describedby="erro-username"{% endif %}>
+        {% if erros.username %}<p class="campo__erro" id="erro-username">{{ erros.username }}</p>{% endif %}
       </div>
 
-      <div class="campo {% if erros.senha %}campo--erro{% endif %}">
+      <div class="campo">
         <label for="senha">Senha</label>
-        <input type="password"
-               id="senha"
-               name="senha"
-               autocomplete="current-password"
-               required>
-        {% if erros.senha %}
-          <span class="campo__erro">{{ erros.senha }}</span>
-        {% endif %}
+        <input type="password" id="senha" name="senha" required autocomplete="current-password"
+               {% if erros.senha %}aria-invalid="true" aria-describedby="erro-senha"{% endif %}>
+        {% if erros.senha %}<p class="campo__erro" id="erro-senha">{{ erros.senha }}</p>{% endif %}
       </div>
 
-      <button type="submit" class="botao botao--primario">Entrar</button>
+      <button type="submit" class="btn btn--primario">Entrar</button>
     </form>
 
-    <p class="auth-link">
-      Ainda não tem conta? <a href="{{ url_for('cadastrar_usuario') }}">Cadastre-se</a>
-    </p>
-  </main>
-
-</body>
-</html>
+    <p class="auth__link">Ainda não tem conta? <a href="{{ url_for('cadastrar_usuario') }}">Cadastre-se</a></p>
+  </section>
+</div>
+{% endblock %}
