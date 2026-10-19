@@ -32,9 +32,12 @@
     <textarea id="descricao" name="descricao" required>{{ v.descricao or '' }}</textarea>
   </div>
 
-  <div class="campo">
-    <label for="prazo">Prazo</label>
-    <input type="date" id="prazo" name="prazo" required value="{{ v.prazo or '' }}">
+    <div class="campo">
+    <label for="prazo_exibicao">Prazo</label>
+    <input type="text" id="prazo_exibicao" inputmode="numeric" placeholder="dd/mm/aaaa"
+           maxlength="10" pattern="\d{2}/\d{2}/\d{4}" autocomplete="off" required>
+    <input type="hidden" id="prazo" name="prazo" value="{{ v.prazo or '' }}">
+    <p class="campo__ajuda">Use o formato dia/mês/ano.</p>
   </div>
 
   <div class="campo">
@@ -66,4 +69,44 @@
     <a class="btn btn--secundario" href="{{ url_for('listar_tarefas') }}">Cancelar</a>
   </div>
 </form>
+
+<script>
+  (function () {
+    var visivel = document.getElementById('prazo_exibicao');
+    var oculto  = document.getElementById('prazo');
+
+    // se já houver data (AAAA-MM-DD), mostra como DD/MM/AAAA
+    if (/^\d{4}-\d{2}-\d{2}$/.test(oculto.value)) {
+      var p = oculto.value.split('-');
+      visivel.value = p[2] + '/' + p[1] + '/' + p[0];
+    }
+
+    // coloca as barras enquanto digita
+    visivel.addEventListener('input', function () {
+      var d = visivel.value.replace(/\D/g, '').slice(0, 8);
+      var t = d.slice(0, 2);
+      if (d.length > 2) t += '/' + d.slice(2, 4);
+      if (d.length > 4) t += '/' + d.slice(4);
+      visivel.value = t;
+      visivel.setCustomValidity('');
+    });
+
+    // confere a data e converte para AAAA-MM-DD antes de enviar
+    visivel.form.addEventListener('submit', function (e) {
+      var m = visivel.value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      var ok = false;
+      if (m) {
+        var dt = new Date(+m[3], +m[2] - 1, +m[1]);
+        ok = dt.getFullYear() === +m[3] && dt.getMonth() === +m[2] - 1 && dt.getDate() === +m[1];
+      }
+      if (!ok) {
+        e.preventDefault();
+        visivel.setCustomValidity('Informe uma data válida no formato dd/mm/aaaa.');
+        visivel.reportValidity();
+        return;
+      }
+      oculto.value = m[3] + '-' + m[2] + '-' + m[1];
+    });
+  })();
+</script>
 {% endblock %}
