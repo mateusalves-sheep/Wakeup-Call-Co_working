@@ -29,6 +29,15 @@
           <li><a href="{{ url_for('listar_tarefas') }}" {% if request.endpoint == 'listar_tarefas' %}aria-current="page"{% endif %}>Tarefas</a></li>
           <li><a href="/contatos" {% if request.path.startswith('/contatos') %}aria-current="page"{% endif %}>Contatos</a></li>
           <li><a href="{{ url_for('criar_tarefa') }}" {% if request.endpoint == 'criar_tarefa' %}aria-current="page"{% endif %}>Nova tarefa</a></li>
+          <li><form class="form-sair" action="{{ url_for('logout') }}" method="POST"><button type="submit" class="btn-sair"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Sair
+            </button>
+            </form>
+            </li>
         </ul>
       </nav>
       {% endif %}

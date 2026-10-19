@@ -357,6 +357,13 @@ def listar_contatos():
     contatos = Usuario.query.order_by(Usuario.username.asc()).all()
     
     return render_template("contatos.html",contatos=contatos)
+
+@app.route("/logout", methods=["POST"])
+@login_required
+def logout():
+    logout_user()
+    flash("Você saiu da sua conta")
+    return redirect(url_for("login"))
     
         
 if __name__ == "__main__":
