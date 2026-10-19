@@ -3,13 +3,13 @@
 {% block titulo %}{{ 'Editar tarefa' if modo == 'editar' else 'Nova tarefa' }}{% endblock %}
 
 {% block conteudo %}
-{# ---- Variáveis esperadas do backend (ver lista de pendências) ----
-   modo        : 'criar' ou 'editar'
-   usuarios    : lista de usuários reais (cada um com .id e .username)
-   valores     : (opcional) objeto Task na edição, ou request.form após erro
-   erros       : (opcional) dict {nome_do_campo: mensagem}
-   erro_geral  : (opcional) mensagem que não pertence a um campo
-   url_excluir : (opcional, só edição) página de confirmação de exclusão
+{# ---- Variáveis enviadas pela rota editar_tarefa() ----
+   modo        : 'editar'
+   usuarios    : lista de usuários (cada um com .id e .username)
+   valores     : objeto Task (primeira abertura) ou request.form (após erro)
+   erros       : dict {nome_do_campo: mensagem}
+   erro_geral  : mensagem que não pertence a um campo
+   url_excluir : URL da rota de exclusão (só aceita POST)
 #}
 {% set editando = (modo == 'editar') %}
 {% set v = valores if valores else {} %}
@@ -29,7 +29,7 @@
 {% endif %}
 
 <form class="formulario" method="POST">
-  {# TODO(Mateus Alves): se usar Flask-WTF, incluir aqui o token CSRF. #}
+  {# TODO: se o grupo adotar Flask-WTF, incluir aqui o token CSRF. #}
 
   <div class="campo">
     <label for="name_task">Título</label>
@@ -47,10 +47,13 @@
   </div>
 
   <div class="campo">
-    <label for="deadline">Prazo</label>
-    <input type="date" id="deadline" name="deadline" required
-           value="{{ v.deadline or '' }}"
-           {% if e.deadline %}aria-invalid="true" aria-describedby="erro-deadline"{% endif %}>
+    <label for="prazo_exibicao">Prazo</label>
+    <input type="text" id="prazo_exibicao" inputmode="numeric" placeholder="dd/mm/aaaa"
+           maxlength="10" pattern="\d{2}/\d{2}/\d{4}" autocomplete="off" required
+           aria-describedby="ajuda-prazo{% if e.deadline %} erro-deadline{% endif %}"
+           {% if e.deadline %}aria-invalid="true"{% endif %}>
+    <input type="hidden" id="deadline" name="deadline" value="{{ v.deadline or '' }}">
+    <p class="campo__ajuda" id="ajuda-prazo">Use o formato dia/mês/ano.</p>
     {% if e.deadline %}<p class="campo__erro" id="erro-deadline">{{ e.deadline }}</p>{% endif %}
   </div>
 
@@ -87,9 +90,6 @@
     <label for="status">Status</label>
     <select id="status" name="status"
             {% if e.status %}aria-invalid="true" aria-describedby="erro-status"{% endif %}>
-      {% if v.status == 'Atrasada' %}
-        <option value="" selected>Manter status atual (Atrasada)</option>
-      {% endif %}
       {% for s in status_editaveis %}
         <option value="{{ s }}" {% if v.status == s %}selected{% endif %}>{{ s }}</option>
       {% endfor %}
@@ -98,34 +98,65 @@
     {% if e.status %}<p class="campo__erro" id="erro-status">{{ e.status }}</p>{% endif %}
   </div>
   {% endif %}
-    
+
   <div class="formulario__acoes">
     <button type="submit" class="btn btn--primario" {% if not usuarios %}disabled{% endif %}>
       {{ 'Salvar alterações' if editando else 'Salvar tarefa' }}
     </button>
-
-    <a class="btn btn--secundario" href="{{ url_for('listar_tarefas') }}">
-      Cancelar
-    </a>
+    <a class="btn btn--secundario" href="{{ url_for('listar_tarefas') }}">Cancelar</a>
   </div>
 </form>
 
-
-    {% if editando and url_excluir %}
+{# Exclusão: formulário separado (não pode ficar dentro do de edição) e sempre POST. #}
+{% if editando and url_excluir %}
 <details class="exclusao">
   <summary class="btn btn--perigo">Excluir tarefa</summary>
   <p>Esta ação não pode ser desfeita. Tem certeza?</p>
   <form method="POST" action="{{ url_excluir }}">
-    {# TODO: se o grupo adotar Flask-WTF, incluir o token CSRF aqui. #}
+    {# TODO: se o grupo adotar Flask-WTF, incluir aqui o token CSRF. #}
     <button type="submit" class="btn btn--perigo">Sim, excluir tarefa</button>
   </form>
 </details>
 {% endif %}
-      <form method="POST" action="{{ url_excluir }}">
-        <button type="submit" class="btn btn--perigo"
-            onclick="return confirm('Tem certeza de que deseja excluir esta tarefa?')">
-          Excluir tarefa
-        </button>
-      </form>
-    {% endif %}
+
+{# Ajuda de digitação do prazo; a validação de verdade continua no backend. #}
+<script>
+  (function () {
+    var visivel = document.getElementById('prazo_exibicao');
+    var oculto  = document.getElementById('deadline');
+
+    // data já existente (AAAA-MM-DD) aparece como DD/MM/AAAA
+    if (/^\d{4}-\d{2}-\d{2}$/.test(oculto.value)) {
+      var p = oculto.value.split('-');
+      visivel.value = p[2] + '/' + p[1] + '/' + p[0];
+    }
+
+    // coloca as barras enquanto digita
+    visivel.addEventListener('input', function () {
+      var d = visivel.value.replace(/\D/g, '').slice(0, 8);
+      var t = d.slice(0, 2);
+      if (d.length > 2) t += '/' + d.slice(2, 4);
+      if (d.length > 4) t += '/' + d.slice(4);
+      visivel.value = t;
+      visivel.setCustomValidity('');
+    });
+
+    // confere a data e converte para AAAA-MM-DD antes de enviar
+    visivel.form.addEventListener('submit', function (ev) {
+      var m = visivel.value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      var ok = false;
+      if (m) {
+        var dt = new Date(+m[3], +m[2] - 1, +m[1]);
+        ok = dt.getFullYear() === +m[3] && dt.getMonth() === +m[2] - 1 && dt.getDate() === +m[1];
+      }
+      if (!ok) {
+        ev.preventDefault();
+        visivel.setCustomValidity('Informe uma data válida no formato dd/mm/aaaa.');
+        visivel.reportValidity();
+        return;
+      }
+      oculto.value = m[3] + '-' + m[2] + '-' + m[1];
+    });
+  })();
+</script>
 {% endblock %}
