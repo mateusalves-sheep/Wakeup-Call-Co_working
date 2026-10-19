@@ -1,147 +1,78 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Criar conta — WakeUp-Call</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body class="auth-body">
+{% extends "base.html" %}
 
-  <main class="auth-card">
-    <header class="auth-header">
-      <h1>WakeUp-Call</h1>
-      <p class="auth-subtitulo">Crie sua conta para organizar suas tarefas</p>
-    </header>
+{% block titulo %}Criar conta{% endblock %}
 
-    {# Mensagens gerais vindas do backend via flash() #}
-    {% with mensagens = get_flashed_messages(with_categories=true) %}
-      {% if mensagens %}
-        <ul class="mensagens">
-          {% for categoria, msg in mensagens %}
-            <li class="mensagem mensagem--{{ categoria }}">{{ msg }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+{% block conteudo %}
+{# Variáveis enviadas pela rota cadastrar_usuario(): erros (dict) e valores (dict).
+   O campo "função" não existe aqui de propósito: o backend define 'membro'. #}
+<div class="auth">
+  <section class="auth__painel" aria-labelledby="titulo-cadastro">
+    <div class="auth__cabecalho">
+      <h1 id="titulo-cadastro">Criar conta</h1>
+      <p>Crie sua conta para organizar suas tarefas.</p>
+    </div>
 
-    <form method="POST"
-          action="{{ url_for('cadastrar_usuario') }}"
-          novalidate
-          id="form-register">
+    <form class="formulario" method="POST" action="{{ url_for('cadastrar_usuario') }}" novalidate id="form-register">
+      {# TODO: se o grupo adotar Flask-WTF, incluir o token CSRF aqui. #}
 
-      {# -------- Username (bate com Usuario.username) -------- #}
-      <div class="campo {% if erros.username %}campo--erro{% endif %}">
-        <label for="username">Usuário *</label>
-        <input type="text"
-               id="username"
-               name="username"
-               value="{{ valores.username or '' }}"
-               autocomplete="username"
-               autofocus
-               required
-               minlength="3"
-               maxlength="150">
-        <small class="campo__dica">Entre 3 e 150 caracteres, sem espaços.</small>
-        {% if erros.username %}
-          <span class="campo__erro">{{ erros.username }}</span>
-        {% endif %}
+      <div class="campo">
+        <label for="username">Usuário</label>
+        <input type="text" id="username" name="username" minlength="3" maxlength="150" required autofocus
+               autocomplete="username" value="{{ valores.username or '' }}"
+               aria-describedby="ajuda-username{% if erros.username %} erro-username{% endif %}"
+               {% if erros.username %}aria-invalid="true"{% endif %}>
+        <p class="campo__ajuda" id="ajuda-username">Entre 3 e 150 caracteres.</p>
+        {% if erros.username %}<p class="campo__erro" id="erro-username">{{ erros.username }}</p>{% endif %}
       </div>
 
-      {# ----------------------------------------------------------
-         CAMPO `funcao` REMOVIDO do cadastro público.
-
-         Motivo: o modelo tem `default='membro'`. Se o cadastro é
-         aberto, permitir escolher "admin" seria falha de segurança.
-
-         Se o líder pedir para reativar, cole de volta este bloco
-         e ajuste as opções:
-      #}
-      {#
-      <div class="campo {% if erros.funcao %}campo--erro{% endif %}">
-        <label for="funcao">Função *</label>
-        <select id="funcao" name="funcao" required>
-          <option value="">Selecione...</option>
-          <option value="membro" {% if valores.funcao == 'membro' %}selected{% endif %}>Membro</option>
-        </select>
-        {% if erros.funcao %}
-          <span class="campo__erro">{{ erros.funcao }}</span>
-        {% endif %}
-      </div>
-      #}
-
-      {# -------- Senha (bate com Usuario.senha — hash no backend) -------- #}
-      <div class="campo {% if erros.senha %}campo--erro{% endif %}">
-        <label for="senha">Senha *</label>
-        <input type="password"
-               id="senha"
-               name="senha"
-               autocomplete="new-password"
-               required
-               minlength="6">
-        <small class="campo__dica">Mínimo 6 caracteres.</small>
-        {% if erros.senha %}
-          <span class="campo__erro">{{ erros.senha }}</span>
-        {% endif %}
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" minlength="6" required autocomplete="new-password"
+               aria-describedby="ajuda-senha{% if erros.senha %} erro-senha{% endif %}"
+               {% if erros.senha %}aria-invalid="true"{% endif %}>
+        <p class="campo__ajuda" id="ajuda-senha">Mínimo de 6 caracteres.</p>
+        {% if erros.senha %}<p class="campo__erro" id="erro-senha">{{ erros.senha }}</p>{% endif %}
       </div>
 
-      {# -------- Confirmar senha (não vai pro banco) -------- #}
-      <div class="campo {% if erros.confirmar_senha %}campo--erro{% endif %}">
-        <label for="confirmar_senha">Confirmar senha *</label>
-        <input type="password"
-               id="confirmar_senha"
-               name="confirmar_senha"
-               autocomplete="new-password"
-               required
-               minlength="6">
-        <span class="campo__erro" id="erro-confirmar" hidden></span>
-        {% if erros.confirmar_senha %}
-          <span class="campo__erro">{{ erros.confirmar_senha }}</span>
-        {% endif %}
+      <div class="campo">
+        <label for="confirmar_senha">Confirmar senha</label>
+        <input type="password" id="confirmar_senha" name="confirmar_senha" minlength="6" required autocomplete="new-password"
+               {% if erros.confirmar_senha %}aria-invalid="true" aria-describedby="erro-confirmar-servidor"{% endif %}>
+        <p class="campo__erro" id="erro-confirmar" role="alert" hidden></p>
+        {% if erros.confirmar_senha %}<p class="campo__erro" id="erro-confirmar-servidor">{{ erros.confirmar_senha }}</p>{% endif %}
       </div>
 
-      <button type="submit" class="botao botao--primario">Criar conta</button>
+      <button type="submit" class="btn btn--primario">Criar conta</button>
     </form>
 
-    <p class="auth-link">
-      Já tem conta? <a href="{{ url_for('login') }}">Entrar</a>
-    </p>
-  </main>
+    <p class="auth__link">Já tem conta? <a href="{{ url_for('login') }}">Entrar</a></p>
+  </section>
+</div>
 
-  <script>
-    (function () {
-      const form     = document.getElementById('form-register');
-      const senha    = document.getElementById('senha');
-      const confirma = document.getElementById('confirmar_senha');
-      const erroEl   = document.getElementById('erro-confirmar');
+{# Aviso visual imediato; o backend continua sendo quem valida de verdade. #}
+<script>
+  (function () {
+    var form     = document.getElementById('form-register');
+    var senha    = document.getElementById('senha');
+    var confirma = document.getElementById('confirmar_senha');
+    var erroEl   = document.getElementById('erro-confirmar');
 
-      function checarSenhas() {
-        if (confirma.value === '') {
-          erroEl.hidden = true;
-          confirma.classList.remove('input--erro');
-          return true;
-        }
-        if (senha.value !== confirma.value) {
-          erroEl.textContent = 'As senhas não conferem.';
-          erroEl.hidden = false;
-          confirma.classList.add('input--erro');
-          return false;
-        }
+    function checarSenhas() {
+      var diferente = confirma.value !== '' && senha.value !== confirma.value;
+      if (diferente) {
+        erroEl.textContent = 'As senhas não conferem.';
+        erroEl.hidden = false;
+        confirma.setAttribute('aria-invalid', 'true');
+      } else {
         erroEl.hidden = true;
-        confirma.classList.remove('input--erro');
-        return true;
+        confirma.removeAttribute('aria-invalid');
       }
+      return !diferente;
+    }
 
-      confirma.addEventListener('input', checarSenhas);
-      senha.addEventListener('input', () => {
-        if (confirma.value !== '') checarSenhas();
-      });
-
-      form.addEventListener('submit', function (e) {
-        if (!checarSenhas()) e.preventDefault();
-      });
-    })();
-  </script>
-
-</body>
-</html>
+    confirma.addEventListener('input', checarSenhas);
+    senha.addEventListener('input', function () { if (confirma.value !== '') checarSenhas(); });
+    form.addEventListener('submit', function (e) { if (!checarSenhas()) e.preventDefault(); });
+  })();
+</script>
+{% endblock %}
