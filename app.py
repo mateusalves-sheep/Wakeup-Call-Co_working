@@ -118,7 +118,7 @@ def cadastrar_usuario():
             erros["confirmar_senha"] = "As senhas não coincidem."
             
         if erros:
-            return render_template("cadastro.html.html", erros=erros, valores=valores)
+            return render_template("cadastro.html", erros=erros, valores=valores)
     
         senha_hash = generate_password_hash(senha)
     
@@ -131,12 +131,12 @@ def cadastrar_usuario():
         except Exception:
             db.session.rollback()
             flash("Ocorreu um erro ao cadastrar o usuário. Por favor, tente novamente.")
-            return render_template("cadastro.html.html", erros=erros, valores=valores)
+            return render_template("cadastro.html", erros=erros, valores=valores)
 
         flash("Usuário cadastrado com sucesso!")
         return redirect(url_for("login"))
 
-    return render_template("cadastro.html.html", erros=erros, valores=valores)
+    return render_template("cadastro.html", erros=erros, valores=valores)
 
 @app.route("/tarefas/nova", methods=["GET","POST"])
 @login_required

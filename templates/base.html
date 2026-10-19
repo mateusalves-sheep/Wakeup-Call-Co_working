@@ -15,8 +15,7 @@
 
   <header class="cabecalho">
     <div class="container cabecalho__interno">
-      <a class="marca" href="/">
-        <!-- sol nascendo: ícone da marca -->
+      <a class="marca" href="{{ url_for('listar_tarefas') if current_user.is_authenticated else url_for('login') }}">
         <svg viewBox="0 0 32 32" aria-hidden="true">
           <path d="M4 22a12 12 0 0 1 24 0z" fill="#f5a524"/>
           <path d="M2 26h28" stroke="#c9d3ea" stroke-width="2.5" stroke-linecap="round"/>
@@ -24,8 +23,7 @@
         WakeUpCall
       </a>
 
-      {# Os caminhos abaixo (/, /contatos, /tarefas/nova) PRECISAM ser
-         confirmados com Mateus Alves e Mateus Henrique. #}
+      {% if current_user.is_authenticated %}
       <nav aria-label="Principal">
         <ul class="menu">
           <li><a href="{{ url_for('listar_tarefas') }}" {% if request.endpoint == 'listar_tarefas' %}aria-current="page"{% endif %}>Tarefas</a></li>
@@ -33,14 +31,15 @@
           <li><a href="{{ url_for('criar_tarefa') }}" {% if request.endpoint == 'criar_tarefa' %}aria-current="page"{% endif %}>Nova tarefa</a></li>
         </ul>
       </nav>
+      {% endif %}
     </div>
   </header>
 
   <main class="container pagina">
-        {% with mensagens = get_flashed_messages() %}
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
       {% if mensagens %}
         <div role="status">
-          {% for m in mensagens %}<p class="alerta">{{ m }}</p>{% endfor %}
+          {% for categoria, m in mensagens %}<p class="alerta alerta--{{ categoria }}">{{ m }}</p>{% endfor %}
         </div>
       {% endif %}
     {% endwith %}

@@ -112,6 +112,15 @@
 
 
     {% if editando and url_excluir %}
+<details class="exclusao">
+  <summary class="btn btn--perigo">Excluir tarefa</summary>
+  <p>Esta ação não pode ser desfeita. Tem certeza?</p>
+  <form method="POST" action="{{ url_excluir }}">
+    {# TODO: se o grupo adotar Flask-WTF, incluir o token CSRF aqui. #}
+    <button type="submit" class="btn btn--perigo">Sim, excluir tarefa</button>
+  </form>
+</details>
+{% endif %}
       <form method="POST" action="{{ url_excluir }}">
         <button type="submit" class="btn btn--perigo"
             onclick="return confirm('Tem certeza de que deseja excluir esta tarefa?')">
