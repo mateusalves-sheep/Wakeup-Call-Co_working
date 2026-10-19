@@ -1,8 +1,9 @@
 /* ==========================================================
-   WakeUpCall — static/css/style.css
+   WakeUpCall — static/style.css
    Ordem do arquivo: 1 tokens · 2 base · 3 layout · 4 navegação
    · 5 botões · 6 formulários · 7 etiquetas · 8 cartão de tarefa
-   · 9 painel · 10 telas maiores
+   · 9 painel · 10 telas maiores · 11 autenticação
+   · 12 complementos · 13 contatos
    Regra do grupo: cores e espaços SEMPRE via variáveis (:root).
    ========================================================== */
 
@@ -163,7 +164,7 @@ a  { color: var(--st-fazendo); }
 .btn--perigo:hover { background: var(--st-atrasada-bg); }
 .btn--pequeno { min-height: 2.25rem; padding: var(--e1) var(--e3); font-size: 0.9rem; }
 
-/* 6. FORMULÁRIOS (usados nas próximas entregas) ------------ */
+/* 6. FORMULÁRIOS ------------------------------------------- */
 .formulario {
   display: grid;
   gap: var(--e4);
@@ -314,7 +315,7 @@ a  { color: var(--st-fazendo); }
   * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
 
-/* 11. AUTENTICAÇÃO ----------------------------------------- */
+/* 11. AUTENTICAÇÃO (login e cadastro) ---------------------- */
 .auth {
   display: grid;
   place-items: center;
@@ -338,18 +339,10 @@ a  { color: var(--st-fazendo); }
   gap: var(--e2);
   text-align: center;
 }
+.auth__cabecalho p { color: var(--texto-suave); }
 
-.auth__cabecalho p {
-  color: var(--texto-suave);
-}
-
-.auth__link {
-  text-align: center;
-}
-
-.auth__link a {
-  font-weight: 700;
-}
+.auth__link { text-align: center; }
+.auth__link a { font-weight: 700; }
 
 .auth__erro {
   color: var(--st-atrasada);
@@ -357,25 +350,14 @@ a  { color: var(--st-fazendo); }
   font-weight: 600;
 }
 
-.auth__painel .btn {
-  width: 100%;
-}
+.auth__painel .btn { width: 100%; }
 
 @media (min-width: 48rem) {
-  .auth__painel {
-    padding: var(--e6);
-  }
+  .auth__painel { padding: var(--e6); }
 }
-.alerta {
-  margin-bottom: var(--e3);
-  padding: var(--e3) var(--e4);
-  border: 1px solid var(--borda);
-  border-left: 5px solid var(--alvorada);
-  border-radius: var(--raio-p);
-  background: var(--superficie);
-  font-weight: 600;
-}
+
 /* 12. COMPLEMENTOS ----------------------------------------- */
+/* texto só para leitores de tela (ex.: rótulo da busca e do botão Editar) */
 .sr-only {
   position: absolute;
   width: 1px; height: 1px;
@@ -386,6 +368,7 @@ a  { color: var(--st-fazendo); }
   border: 0;
 }
 
+/* campo com erro de validação */
 .campo [aria-invalid="true"] { border-color: var(--st-atrasada); }
 
 .alerta-erro {
@@ -398,16 +381,128 @@ a  { color: var(--st-fazendo); }
   font-weight: 600;
 }
 
-/* mensagens flash por categoria (se o backend usar "erro" / "sucesso") */
+/* mensagens flash (base.html): neutra por padrão, colorida por categoria */
+.alerta {
+  margin-bottom: var(--e3);
+  padding: var(--e3) var(--e4);
+  border: 1px solid var(--borda);
+  border-left: 5px solid var(--alvorada);
+  border-radius: var(--raio-p);
+  background: var(--superficie);
+  font-weight: 600;
+}
 .alerta--erro    { border-left-color: var(--st-atrasada);  background: var(--st-atrasada-bg); }
 .alerta--sucesso { border-left-color: var(--st-concluida); background: var(--st-concluida-bg); }
 
-/* formulário dentro do painel de login/registro: sem caixa dupla */
+/* formulário dentro do painel de login/cadastro: sem caixa dupla */
 .auth__painel .formulario { padding: 0; border: 0; max-width: none; }
 
-/* confirmação de exclusão sem JavaScript */
+/* confirmação de exclusão sem JavaScript (tarefa_form.html) */
 .exclusao { margin-top: var(--e4); max-width: 40rem; }
 .exclusao summary { list-style: none; cursor: pointer; }
 .exclusao summary::-webkit-details-marker { display: none; }
 .exclusao[open] summary { margin-bottom: var(--e3); }
 .exclusao p { margin-bottom: var(--e3); }
+
+/* 13. CONTATOS --------------------------------------------- */
+.contatos {
+  display: grid;
+  gap: var(--e4);
+  padding: var(--e4);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-g);
+}
+
+.contatos__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--e3);
+}
+.contatos__topo p { color: var(--texto-suave); }
+.contatos__busca { width: 100%; }
+
+.contatos__lista {
+  display: grid;
+  gap: var(--e2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* cada contato: no celular, avatar + nome em cima e números embaixo */
+.contato {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--e3);
+  padding: var(--e3) var(--e4);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-p);
+}
+.contato:hover { border-color: var(--noite-2); }
+
+.contato__avatar {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--noite-2);
+  color: #fff;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+}
+
+.contato__info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e2) var(--e3);
+  min-width: 0;
+}
+.contato__nome {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.etiqueta--funcao {
+  background: var(--st-afazer-bg);
+  color: var(--st-afazer);
+  text-transform: capitalize;
+}
+
+.contato__numeros {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--e5);
+  margin: 0;
+  padding-top: var(--e3);
+  border-top: 1px solid var(--borda);
+}
+.contato__numeros div { display: grid; gap: var(--e1); }
+.contato__numeros dt { color: var(--texto-suave); font-size: 0.85rem; font-weight: 600; }
+.contato__numeros dd {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* sem isso, o display acima ignora o atributo hidden e a busca não esconde nada */
+.contato[hidden], .vazio[hidden] { display: none; }
+
+@media (min-width: 48rem) {
+  .contatos { padding: var(--e5); }
+  .contatos__busca { width: 20rem; }
+  .contato { grid-template-columns: auto 1fr auto; }
+  .contato__numeros {
+    grid-column: auto;
+    padding-top: 0;
+    border-top: 0;
+    gap: var(--e6);
+  }
+}
